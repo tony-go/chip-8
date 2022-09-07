@@ -1,5 +1,3 @@
-const NOOP_OPCODE: u16 = 0;
-
 struct CPU {
     registers: [u8; 16],
     position_in_memory: usize,
@@ -39,7 +37,7 @@ impl CPU {
                 (0, 0, 0xE, 0xE) => {
                     println!("OP RET");
                     self.ret()
-                },
+                }
                 (0x2, _, _, _) => {
                     println!("OP CALL");
                     let nnn = opcode & 0x0FFF;
@@ -48,7 +46,7 @@ impl CPU {
                 (0x8, _, _, 0x4) => {
                     println!("OP ADD");
                     self.add_xy(x, y)
-                },
+                }
                 _ => todo!("opcode {:04x}", opcode),
             }
         }
@@ -63,8 +61,7 @@ impl CPU {
 
         if has_overflow {
             self.registers[0xF] = 1;
-        }
-        else {
+        } else {
             self.registers[0xF] = 1;
         }
     }
@@ -106,18 +103,24 @@ fn main() {
     cpu.registers[1] = 10;
 
     let mem = &mut cpu.memory;
-    mem[0x000] = 0x21; mem[0x001] = 0x00;
-    mem[0x002] = 0x21; mem[0x003] = 0x00;
-    mem[0x004] = 0x00; mem[0x005] = 0x00;
+    // All instruction are paire by 2
 
-    mem[0x100] = 0x80; mem[0x101] = 0x14;
-    mem[0x102] = 0x80; mem[0x103] = 0x14;
-    mem[0x104] = 0x00; mem[0x105] = 0xEE;
+    mem[0x000] = 0x21;
+    mem[0x001] = 0x00; // call the function at slot 0x100
+    mem[0x002] = 0x21;
+    mem[0x003] = 0x00; // call the function at slot 0x100
+    mem[0x004] = 0x00;
+    mem[0x005] = 0x00; // end
 
-    println!("{:?}", &mem[0x100..0x106]);
+    mem[0x100] = 0x80;
+    mem[0x101] = 0x14; // add what we have in register 0 and 1
+    mem[0x102] = 0x80;
+    mem[0x103] = 0x14; // add what we have in register 0 and 1
+    mem[0x104] = 0x00;
+    mem[0x105] = 0xEE; // return
 
     cpu.run();
 
     assert_eq!(cpu.registers[0], 45);
-    println!("end");
+    println!("Succeed!");
 }
